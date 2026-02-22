@@ -1,0 +1,5 @@
+{
+  "name": "World Class Title - Smart Onboarding",
+  "description": "Production prototype for agent verification and homeowner handoff after invoice payment or direct onboarding.",
+  "requestFramePermissions": ["camera"]
+}
