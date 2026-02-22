@@ -2,15 +2,15 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, CreditCard, UserPlus } from 'lucide-react';
+import { ArrowRight, CreditCard, UserPlus, Mail } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
   const logoUrl = "https://images.squarespace-cdn.com/content/v1/5f4d40b11b4f1e6a11b920b5/1598967776211-2JVFU1R4U8PQM71BWUVE/WorldClassTitle_Logos-RGB-Primary.png?format=1500w";
 
   const startDemo = () => {
-    // Simulate a successful checkout redirect
-    router.push('/onboard?invoiceId=inv_123&sessionId=cs_test_123');
+    // Start at the invoice email simulation
+    router.push('/invoice/inv_123');
   };
 
   const startDirectOnboarding = () => {
@@ -51,8 +51,8 @@ export default function Home() {
               onClick={startDemo}
               className="group w-full bg-[#004EA8] text-white font-bold py-5 rounded-2xl hover:bg-[#003d82] transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 text-lg uppercase tracking-wider"
             >
-              <CreditCard className="h-6 w-6" />
-              Simulate Payment Success
+              <Mail className="h-6 w-6" />
+              Start Demo Flow
               <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </button>
             <button

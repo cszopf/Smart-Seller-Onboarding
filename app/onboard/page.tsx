@@ -36,6 +36,7 @@ export default function OnboardingPage() {
   const [verifying, setVerifying] = useState(false);
   const [linkSent, setLinkSent] = useState<string | null>(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showVerificationPopup, setShowVerificationPopup] = useState(false);
 
   // Form states for client info
   const [clientInfo, setClientInfo] = useState({
@@ -48,77 +49,48 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (invoiceId && sessionId) {
+      // Silent background confirmation to pre-populate data
       confirmInvoice();
     } else {
-      // Direct onboarding - create a temp agent or just move to step 2
-      // In a real app, we might ask for email first. 
-      // For this prototype, we'll assume a generic agent if no invoice.
+      // Direct onboarding
       setAgent({
         agentUserId: 'agent_new',
         email: '',
         verificationStatus: 'unverified'
       });
-      setStep(2);
-      setLoading(false);
     }
+    // Land directly on Step 2 (Verify Identity)
+    setStep(2);
+    setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceId, sessionId]);
 
   const confirmInvoice = async () => {
     try {
-      setLoading(true);
       const res = await fetch(`/api/invoices/confirm?invoiceId=${invoiceId}&sessionId=${sessionId}`);
       const data = await res.json();
       if (res.ok) {
         setInvoice(data.invoice);
         setAgent(data.agent);
         // Pre-populate client info if available from invoice/agent context
-        // In a real app, the invoice might have property details
         setClientInfo(prev => ({
           ...prev,
           address: '123 Listing Lane, Beverly Hills, CA' // Simulated pre-population
         }));
-        setStep(2); // Move to verification step
-      } else {
-        setError(data.error || 'Failed to confirm payment');
       }
     } catch (err) {
-      setError('A network error occurred. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Silent confirmation failed:', err);
     }
   };
 
   const startVerification = async () => {
-    try {
-      setVerifying(true);
-      const res = await fetch('/api/identity/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentUserId: agent.agentUserId }),
-      });
-      const data = await res.json();
-      
-      if (res.ok) {
-        // In prototype, we simulate the Stripe Identity redirect
-        // We'll just show a "Processing" state and then auto-verify for the demo
-        window.open(data.url, '_blank');
-        
-        // Poll for status or simulate completion
-        setTimeout(async () => {
-          await fetch('/api/identity/status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ agentUserId: agent.agentUserId, status: 'verified' }),
-          });
-          setAgent({ ...agent, verificationStatus: 'verified' });
-          setStep(3); // Move to client details
-          setVerifying(false);
-        }, 3000);
-      }
-    } catch (err) {
-      setVerifying(false);
-    }
+    setShowVerificationPopup(true);
+  };
+
+  const completeVerification = () => {
+    setAgent({ ...agent, verificationStatus: 'verified' });
+    setStep(3); // Move to client details
+    setShowVerificationPopup(false);
   };
 
   const sendVerificationLink = async (destination: string) => {
@@ -255,14 +227,28 @@ export default function OnboardingPage() {
                       : 'Verify your identity to unlock Smart Spaces and begin client authorization.'}
                   </p>
 
-                  <div className="bg-blue-50 rounded-2xl p-6 mb-8 border border-blue-100">
-                    <div className="flex gap-4">
-                      <ShieldCheck className="h-6 w-6 text-[#004EA8] shrink-0" />
-                      <div>
-                        <h4 className="font-bold text-[#004EA8] mb-1 font-montserrat uppercase tracking-wider text-xs">Why we verify identity</h4>
-                        <p className="text-sm text-blue-800 leading-relaxed font-nunito">
-                          This protects your clients, prevents fraud, and allows us to securely request homeowner authorization and prior policy documents.
-                        </p>
+                  <div className="space-y-6 mb-10">
+                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                      <div className="flex gap-4">
+                        <ShieldCheck className="h-6 w-6 text-[#004EA8] shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-[#004EA8] mb-1 font-montserrat uppercase tracking-wider text-xs">What is Smart Verification?</h4>
+                          <p className="text-sm text-blue-800 leading-relaxed font-nunito">
+                            Smart Verification is our secure identity layer. By verifying who you are, we establish a chain of trust that allows you to handle sensitive property data and legal authorizations on behalf of your clients without traditional paperwork delays.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
+                      <div className="flex gap-4">
+                        <UserPlus className="h-6 w-6 text-indigo-600 shrink-0" />
+                        <div>
+                          <h4 className="font-bold text-indigo-600 mb-1 font-montserrat uppercase tracking-wider text-xs">Why Onboard the Homeowner?</h4>
+                          <p className="text-sm text-indigo-800 leading-relaxed font-nunito">
+                            Onboarding your client (the homeowner) early allows us to proactively collect prior title policies and secure digital authorizations. This &quot;Smart&quot; approach identifies title issues weeks before the closing date, ensuring a smooth, surprise-free experience for your client.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -476,6 +462,33 @@ export default function OnboardingPage() {
               className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-black transition-colors"
             >
               Close
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Mock Verification Popup */}
+      {showVerificationPopup && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[60]">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] p-12 max-w-lg w-full shadow-2xl text-center border border-blue-50"
+          >
+            <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+              <ShieldCheck className="h-12 w-12 text-[#004EA8]" />
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-4 font-nunito uppercase tracking-[0.15em]">Authentication Here</h3>
+            <p className="text-lg text-gray-600 mb-10 font-nunito leading-relaxed">
+              This is where the secure identity verification process would take place. For this prototype, simply click next to proceed.
+            </p>
+            
+            <button 
+              onClick={completeVerification}
+              className="w-full bg-[#004EA8] text-white font-bold py-5 rounded-2xl hover:bg-[#003d82] transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 text-lg uppercase tracking-wider"
+            >
+              Next
+              <ArrowRight className="h-6 w-6" />
             </button>
           </motion.div>
         </div>
