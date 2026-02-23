@@ -218,9 +218,53 @@ export default function OnboardingPage() {
             >
               <div className="p-8 md:p-12">
                 <div className="max-w-xl">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4 font-nunito uppercase tracking-[0.15em]">
-                    {invoiceId ? 'Payment received' : 'Welcome to Smart'}
-                  </h2>
+                  <div className="flex items-center gap-6 mb-8">
+                    {invoiceId && (
+                      <div className="relative flex shrink-0">
+                        <motion.div
+                          initial={{ scale: 0, rotate: -45 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 260, 
+                            damping: 20,
+                            delay: 0.2 
+                          }}
+                          className="bg-emerald-500 p-3 rounded-full shadow-lg shadow-emerald-200 relative z-10"
+                        >
+                          <CheckCircle2 className="h-8 w-8 text-white" />
+                        </motion.div>
+                        
+                        {/* Confetti particles */}
+                        {[...Array(12)].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ scale: 0, x: 0, y: 0 }}
+                            animate={{ 
+                              scale: [0, 1, 0],
+                              x: (Math.random() - 0.5) * 150,
+                              y: (Math.random() - 0.5) * 150,
+                              rotate: Math.random() * 360
+                            }}
+                            transition={{ 
+                              duration: 1.5,
+                              delay: 0.3,
+                              ease: "easeOut"
+                            }}
+                            className={cn(
+                              "absolute w-1.5 h-1.5 rounded-sm",
+                              i % 3 === 0 ? "bg-emerald-400" : i % 3 === 1 ? "bg-blue-400" : "bg-yellow-400"
+                            )}
+                            style={{ left: '50%', top: '50%' }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    <h2 className="text-3xl font-bold text-gray-900 font-nunito uppercase tracking-[0.15em]">
+                      {invoiceId ? 'Payment received' : 'Welcome to Smart'}
+                    </h2>
+                  </div>
                   <p className="text-lg text-gray-600 mb-8 font-nunito">
                     {invoiceId 
                       ? 'Next step, verify your identity to unlock Smart Spaces and begin client authorization.'
