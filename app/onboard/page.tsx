@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -27,9 +29,6 @@ import {
 } from 'lucide-react';
 import { Stepper } from '@/components/Stepper';
 import { cn } from '@/lib/utils';
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
 export default function OnboardingPage() {
   const searchParams = useSearchParams();
@@ -77,17 +76,26 @@ export default function OnboardingPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setUploadedDocs(prev => prev.map(d => d.id === doc.id ? { ...d, status: 'scanning' as const } : d));
 
-      // 2. AI Scan with Gemini
+      // 2. AI Scan with Gemini via Server Route
       try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: `You are a title insurance expert. Create a brief, professional 3-bullet point summary for a document named "${doc.name}". 
+        const prompt = `You are a title insurance expert. Create a brief, professional 3-bullet point summary for a document named "${doc.name}". 
           Assume it is a real estate document like a title policy, survey, or deed. 
           Make the summary sound realistic and helpful for a title team. 
-          Format: Just the 3 bullet points, no intro.`,
+          Format: Just the 3 bullet points, no intro.`;
+
+        const response = await fetch('/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
         });
 
-        const summary = response.text || "AI could not generate a summary for this document.";
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to scan document");
+        }
+
+        const summary = data.result || "AI could not generate a summary for this document.";
         setUploadedDocs(prev => prev.map(d => d.id === doc.id ? { ...d, summary, status: 'ready' as const } : d));
       } catch (err) {
         console.error("AI Scanning failed:", err);
