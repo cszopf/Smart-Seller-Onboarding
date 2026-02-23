@@ -7,7 +7,8 @@ import { motion } from 'motion/react';
 
 export default function InvoicePage() {
   const router = useRouter();
-  const logoUrl = "https://images.squarespace-cdn.com/content/v1/5f4d40b11b4f1e6a11b920b5/1598967776211-2JVFU1R4U8PQM71BWUVE/WorldClassTitle_Logos-RGB-Primary.png?format=1500w";
+  const logoUrl = "https://lh7-rt.googleusercontent.com/docsz/AD_4nXeSb6s_P3nXRrs9OUquQgATijkDX14cEdeK7kfFUFKVOvUMVife1HmNbLBMS4EQ8b5nKM-enx639-uc6mZ1b9kQbj41a6g4HwvAQPWZVHqq7Ity6k9n7AMSqCQVe-TAnBOOSaJcAhUrAuLw6bnSVj9pQYPDIw?key=kl0MF71HcvaAWt9zvK_MLQ";
+  const headshotUrl = "https://lh7-rt.googleusercontent.com/docsz/AD_4nXe6Tb9_rjAZXJBDcY-fBLjF8XZn3Bn0oPyVdKgW1C-uXIAornHsxant93RXuSqKpn9n2ID1nMkXU3fClBfbDbslzdfoq3sEMopFyibq-__ibq4MoOGtHRku0tjKeKvYeqyoKfkNAoxHdHr8s_KbEJl-O8Yq_Bo?key=kl0MF71HcvaAWt9zvK_MLQ";
 
   const handlePayNow = () => {
     router.push('/checkout');
@@ -18,9 +19,11 @@ export default function InvoicePage() {
       {/* Email Header Simulation */}
       <div className="max-w-3xl w-full mb-8 flex items-center justify-between text-gray-400 text-sm border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white">WT</div>
+          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white overflow-hidden">
+            <Image src={headshotUrl} alt="Chris" width={40} height={40} className="object-cover" />
+          </div>
           <div>
-            <p className="font-bold text-white">World Class Title</p>
+            <p className="font-bold text-white">Chris Sauerzopf</p>
             <p>Payment Request for Marketing Campaign #1</p>
           </div>
         </div>
@@ -56,9 +59,14 @@ export default function InvoicePage() {
             <p className="text-gray-300 text-lg leading-relaxed">
               We are writing to coordinate the payment for your upcoming <span className="font-bold text-white uppercase tracking-wider">Gold Package</span> marketing campaign.
             </p>
-            <p className="text-gray-300 text-lg">
-              For Property/Seller: <span className="font-bold text-white uppercase tracking-wider">Peter Cameron</span>
-            </p>
+            <div className="space-y-1">
+              <p className="text-gray-300 text-lg">
+                For Property: <span className="font-bold text-white uppercase tracking-wider">123 Listing Lane, Beverly Hills, CA</span>
+              </p>
+              <p className="text-gray-300 text-lg">
+                Seller: <span className="font-bold text-white uppercase tracking-wider">Peter Cameron</span>
+              </p>
+            </div>
           </div>
 
           <div className="bg-[#333333] rounded-xl p-8 border border-white/5">
@@ -96,6 +104,23 @@ export default function InvoicePage() {
                   <Clock className="h-3 w-3" />
                   <span>This payment link expires in 24 hours.</span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sales Rep Footer */}
+          <div className="pt-8 border-t border-white/10 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/20">
+              <Image src={headshotUrl} alt="Chris Sauerzopf" width={48} height={48} className="object-cover" />
+            </div>
+            <div className="text-sm">
+              <p className="font-bold text-white">Chris Sauerzopf</p>
+              <p className="text-gray-400">World Class Title Representative</p>
+              <p className="text-[#CCFF00] font-bold mt-1">Have a question, reach out.</p>
+              <div className="flex gap-3 mt-1 text-gray-500">
+                <a href="mailto:chris@worldclasstitle.com" className="hover:text-[#CCFF00]">chris@worldclasstitle.com</a>
+                <span>•</span>
+                <span>614.444.4444</span>
               </div>
             </div>
           </div>

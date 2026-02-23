@@ -16,17 +16,28 @@ import {
   ExternalLink,
   Building2,
   MapPin,
-  FileText
+  FileText,
+  Plus,
+  Trash2,
+  Users,
+  Upload,
+  FileSearch,
+  Sparkles,
+  X
 } from 'lucide-react';
 import { Stepper } from '@/components/Stepper';
 import { cn } from '@/lib/utils';
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
 export default function OnboardingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const invoiceId = searchParams.get('invoiceId');
   const sessionId = searchParams.get('sessionId');
-  const logoUrl = "https://images.squarespace-cdn.com/content/v1/5f4d40b11b4f1e6a11b920b5/1598967776211-2JVFU1R4U8PQM71BWUVE/WorldClassTitle_Logos-RGB-Primary.png?format=1500w";
+  const logoUrl = "https://lh7-rt.googleusercontent.com/docsz/AD_4nXeSb6s_P3nXRrs9OUquQgATijkDX14cEdeK7kfFUFKVOvUMVife1HmNbLBMS4EQ8b5nKM-enx639-uc6mZ1b9kQbj41a6g4HwvAQPWZVHqq7Ity6k9n7AMSqCQVe-TAnBOOSaJcAhUrAuLw6bnSVj9pQYPDIw?key=kl0MF71HcvaAWt9zvK_MLQ";
+  const headshotUrl = "https://lh7-rt.googleusercontent.com/docsz/AD_4nXe6Tb9_rjAZXJBDcY-fBLjF8XZn3Bn0oPyVdKgW1C-uXIAornHsxant93RXuSqKpn9n2ID1nMkXU3fClBfbDbslzdfoq3sEMopFyibq-__ibq4MoOGtHRku0tjKeKvYeqyoKfkNAoxHdHr8s_KbEJl-O8Yq_Bo?key=kl0MF71HcvaAWt9zvK_MLQ";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,15 +48,91 @@ export default function OnboardingPage() {
   const [linkSent, setLinkSent] = useState<string | null>(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+  const [showHandoffPopup, setShowHandoffPopup] = useState(false);
+  const [agentQuestion, setAgentQuestion] = useState('');
 
   // Form states for client info
-  const [clientInfo, setClientInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    notes: ''
-  });
+  const [homeowners, setHomeowners] = useState([{ name: '', email: '', phone: '' }]);
+  const [propertyAddress, setPropertyAddress] = useState('');
+  const [notes, setNotes] = useState('');
+  const [teamMembers, setTeamMembers] = useState<{ role: string, name: string, email: string }[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<{ id: string, name: string, type: string, summary?: string, status: 'uploading' | 'scanning' | 'ready' | 'confirmed' }[]>([]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newDocs = Array.from(files).map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      type: file.type,
+      status: 'uploading' as const
+    }));
+
+    setUploadedDocs(prev => [...prev, ...newDocs]);
+
+    // Process each file
+    for (const doc of newDocs) {
+      // 1. Simulate Upload
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setUploadedDocs(prev => prev.map(d => d.id === doc.id ? { ...d, status: 'scanning' as const } : d));
+
+      // 2. AI Scan with Gemini
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: `You are a title insurance expert. Create a brief, professional 3-bullet point summary for a document named "${doc.name}". 
+          Assume it is a real estate document like a title policy, survey, or deed. 
+          Make the summary sound realistic and helpful for a title team. 
+          Format: Just the 3 bullet points, no intro.`,
+        });
+
+        const summary = response.text || "AI could not generate a summary for this document.";
+        setUploadedDocs(prev => prev.map(d => d.id === doc.id ? { ...d, summary, status: 'ready' as const } : d));
+      } catch (err) {
+        console.error("AI Scanning failed:", err);
+        setUploadedDocs(prev => prev.map(d => d.id === doc.id ? { ...d, summary: "Error scanning document. Please review manually.", status: 'ready' as const } : d));
+      }
+    }
+  };
+
+  const confirmDoc = (id: string) => {
+    setUploadedDocs(prev => prev.map(d => d.id === id ? { ...d, status: 'confirmed' as const } : d));
+  };
+
+  const removeDoc = (id: string) => {
+    setUploadedDocs(prev => prev.filter(d => d.id !== id));
+  };
+
+  const addHomeowner = () => {
+    setHomeowners([...homeowners, { name: '', email: '', phone: '' }]);
+  };
+
+  const removeHomeowner = (index: number) => {
+    if (homeowners.length > 1) {
+      setHomeowners(homeowners.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateHomeowner = (index: number, field: string, value: string) => {
+    const newHomeowners = [...homeowners];
+    newHomeowners[index] = { ...newHomeowners[index], [field]: value };
+    setHomeowners(newHomeowners);
+  };
+
+  const addTeamMember = () => {
+    setTeamMembers([...teamMembers, { role: 'Transaction Coordinator', name: '', email: '' }]);
+  };
+
+  const removeTeamMember = (index: number) => {
+    setTeamMembers(teamMembers.filter((_, i) => i !== index));
+  };
+
+  const updateTeamMember = (index: number, field: string, value: string) => {
+    const newTeamMembers = [...teamMembers];
+    newTeamMembers[index] = { ...newTeamMembers[index], [field]: value };
+    setTeamMembers(newTeamMembers);
+  };
 
   useEffect(() => {
     if (invoiceId && sessionId) {
@@ -73,10 +160,7 @@ export default function OnboardingPage() {
         setInvoice(data.invoice);
         setAgent(data.agent);
         // Pre-populate client info if available from invoice/agent context
-        setClientInfo(prev => ({
-          ...prev,
-          address: '123 Listing Lane, Beverly Hills, CA' // Simulated pre-population
-        }));
+        setPropertyAddress('123 Listing Lane, Beverly Hills, CA');
       }
     } catch (err) {
       console.error('Silent confirmation failed:', err);
@@ -112,7 +196,12 @@ export default function OnboardingPage() {
 
   const submitSellerClient = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowHandoffPopup(true);
+  };
+
+  const confirmHandoff = async () => {
     try {
+      setShowHandoffPopup(false);
       setLoading(true);
       const res = await fetch('/api/seller-clients/create', {
         method: 'POST',
@@ -120,11 +209,14 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           invoiceId,
           agentUserId: agent.agentUserId,
-          sellerName: clientInfo.name,
-          sellerEmail: clientInfo.email,
-          sellerPhone: clientInfo.phone,
-          propertyAddress: clientInfo.address,
-          notes: clientInfo.notes
+          sellerName: homeowners[0].name,
+          sellerEmail: homeowners[0].email,
+          sellerPhone: homeowners[0].phone,
+          propertyAddress,
+          notes,
+          additionalHomeowners: homeowners.slice(1),
+          teamMembers,
+          agentQuestion // Pass the question if any
         }),
       });
       const data = await res.json();
@@ -372,44 +464,15 @@ export default function OnboardingPage() {
               </div>
 
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2 font-nunito uppercase tracking-[0.15em]">Homeowner details</h2>
-                <p className="text-gray-600 mb-8 font-nunito">Provide homeowner information for proactive authorization and prior policy collection.</p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2 font-nunito uppercase tracking-[0.15em]">Add details</h2>
+                <p className="text-gray-600 mb-8 font-nunito">Provide homeowner and team information for proactive authorization and prior policy collection.</p>
 
-                <form onSubmit={submitSellerClient} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Homeowner Full Name</label>
-                      <input
-                        required
-                        type="text"
-                        placeholder="Jane Doe"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito"
-                        value={clientInfo.name}
-                        onChange={e => setClientInfo({ ...clientInfo, name: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Homeowner Email</label>
-                      <input
-                        required
-                        type="email"
-                        placeholder="jane@example.com"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito"
-                        value={clientInfo.email}
-                        onChange={e => setClientInfo({ ...clientInfo, email: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Homeowner Mobile Phone</label>
-                      <input
-                        required
-                        type="tel"
-                        placeholder="(555) 000-0000"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito"
-                        value={clientInfo.phone}
-                        onChange={e => setClientInfo({ ...clientInfo, phone: e.target.value })}
-                      />
-                    </div>
+                <form onSubmit={submitSellerClient} className="space-y-10">
+                  {/* Property Section */}
+                  <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-[#004EA8] uppercase tracking-[0.2em] flex items-center gap-2">
+                      <MapPin className="h-4 w-4" /> Property Information
+                    </h3>
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Property Address</label>
                       <div className="relative">
@@ -419,10 +482,242 @@ export default function OnboardingPage() {
                           type="text"
                           placeholder="123 Main St, City, State"
                           className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito"
-                          value={clientInfo.address}
-                          onChange={e => setClientInfo({ ...clientInfo, address: e.target.value })}
+                          value={propertyAddress}
+                          onChange={e => setPropertyAddress(e.target.value)}
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Homeowners Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-[#004EA8] uppercase tracking-[0.2em] flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Homeowner Details
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={addHomeowner}
+                        className="text-[#004EA8] text-xs font-bold flex items-center gap-1 hover:underline"
+                      >
+                        <Plus className="h-3 w-3" /> Additional homeowner
+                      </button>
+                    </div>
+
+                    <div className="space-y-8">
+                      {homeowners.map((homeowner, index) => (
+                        <div key={index} className="relative p-6 rounded-2xl border border-gray-100 bg-gray-50/50 space-y-6">
+                          {homeowners.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeHomeowner(index)}
+                              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Full Name</label>
+                              <input
+                                required
+                                type="text"
+                                placeholder="Jane Doe"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito bg-white"
+                                value={homeowner.name}
+                                onChange={e => updateHomeowner(index, 'name', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Email</label>
+                              <input
+                                required
+                                type="email"
+                                placeholder="jane@example.com"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito bg-white"
+                                value={homeowner.email}
+                                onChange={e => updateHomeowner(index, 'email', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Mobile Phone</label>
+                              <input
+                                required
+                                type="tel"
+                                placeholder="(555) 000-0000"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all font-nunito bg-white"
+                                value={homeowner.phone}
+                                onChange={e => updateHomeowner(index, 'phone', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Team Members Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-[#004EA8] uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Users className="h-4 w-4" /> Team Members
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={addTeamMember}
+                        className="text-[#004EA8] text-xs font-bold flex items-center gap-1 hover:underline"
+                      >
+                        <Plus className="h-3 w-3" /> Add team members
+                      </button>
+                    </div>
+
+                    {teamMembers.length > 0 ? (
+                      <div className="space-y-4">
+                        {teamMembers.map((member, index) => (
+                          <div key={index} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl border border-gray-100 bg-white items-end">
+                            <div className="flex-1 space-y-2 w-full">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Role</label>
+                              <select
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] outline-none transition-all font-nunito bg-white"
+                                value={member.role}
+                                onChange={e => updateTeamMember(index, 'role', e.target.value)}
+                              >
+                                <option>Transaction Coordinator</option>
+                                <option>Agent (Team Member)</option>
+                                <option>Assistant</option>
+                              </select>
+                            </div>
+                            <div className="flex-1 space-y-2 w-full">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Full Name</label>
+                              <input
+                                required
+                                type="text"
+                                placeholder="John Smith"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] outline-none transition-all font-nunito bg-white"
+                                value={member.name}
+                                onChange={e => updateTeamMember(index, 'name', e.target.value)}
+                              />
+                            </div>
+                            <div className="flex-1 space-y-2 w-full">
+                              <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Email</label>
+                              <input
+                                required
+                                type="email"
+                                placeholder="john@example.com"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] outline-none transition-all font-nunito bg-white"
+                                value={member.email}
+                                onChange={e => updateTeamMember(index, 'email', e.target.value)}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeTeamMember(index)}
+                              className="p-3 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 border-2 border-dashed border-gray-200 rounded-2xl text-center">
+                        <p className="text-sm text-gray-400 font-nunito">No team members added yet. Add a TC or assistant to keep them in the loop.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Supporting Documents Section */}
+                  <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-[#004EA8] uppercase tracking-[0.2em] flex items-center gap-2">
+                      <FileSearch className="h-4 w-4" /> Supporting Documents
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="relative group">
+                        <input 
+                          type="file" 
+                          multiple 
+                          onChange={handleFileUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center group-hover:border-[#004EA8] group-hover:bg-blue-50/50 transition-all">
+                          <div className="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <Upload className="h-6 w-6 text-[#004EA8]" />
+                          </div>
+                          <p className="text-sm font-bold text-gray-700 mb-1">Click or drag to upload documents</p>
+                          <p className="text-xs text-gray-400">Prior Title Policies, Surveys, Trust Agreements, etc.</p>
+                        </div>
+                      </div>
+
+                      {uploadedDocs.length > 0 && (
+                        <div className="space-y-4">
+                          {uploadedDocs.map((doc) => (
+                            <motion.div 
+                              key={doc.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                            >
+                              <div className="p-4 flex items-center justify-between bg-gray-50/50">
+                                <div className="flex items-center gap-3">
+                                  <div className="bg-white p-2 rounded-lg border border-gray-100">
+                                    <FileText className="h-5 w-5 text-gray-400" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold text-gray-900">{doc.name}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">
+                                      {doc.status === 'uploading' ? 'Uploading...' : doc.status === 'scanning' ? 'AI Scanning...' : 'Scan Complete'}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button"
+                                  onClick={() => removeDoc(doc.id)}
+                                  className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+
+                              {(doc.status === 'scanning' || doc.status === 'ready' || doc.status === 'confirmed') && (
+                                <div className="p-6 space-y-4">
+                                  <div className="flex items-center gap-2 text-[#004EA8]">
+                                    <Sparkles className="h-4 w-4" />
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] font-montserrat">AI Summary</span>
+                                  </div>
+                                  
+                                  {doc.status === 'scanning' ? (
+                                    <div className="flex items-center gap-3 py-2">
+                                      <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                                      <p className="text-sm text-gray-400 italic">Analyzing document contents...</p>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-4">
+                                      <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line bg-blue-50/30 p-4 rounded-xl border border-blue-50/50">
+                                        {doc.summary}
+                                      </div>
+                                      
+                                      {doc.status === 'ready' ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => confirmDoc(doc.id)}
+                                          className="text-xs font-bold text-[#004EA8] flex items-center gap-1 hover:underline"
+                                        >
+                                          <CheckCircle2 className="h-3 w-3" /> Confirm AI Summary
+                                        </button>
+                                      ) : (
+                                        <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold">
+                                          <CheckCircle2 className="h-3 w-3" /> Summary Confirmed
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -432,8 +727,8 @@ export default function OnboardingPage() {
                       rows={3}
                       placeholder="Any specific instructions for the title team..."
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] focus:border-transparent outline-none transition-all resize-none font-nunito"
-                      value={clientInfo.notes}
-                      onChange={e => setClientInfo({ ...clientInfo, notes: e.target.value })}
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
                     />
                   </div>
 
@@ -532,6 +827,98 @@ export default function OnboardingPage() {
               className="w-full bg-[#004EA8] text-white font-bold py-5 rounded-2xl hover:bg-[#003d82] transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 text-lg uppercase tracking-wider"
             >
               Next
+              <ArrowRight className="h-6 w-6" />
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Handoff Confirmation Popup */}
+      {showHandoffPopup && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-[60]">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] p-10 max-w-2xl w-full shadow-2xl border border-blue-50 overflow-y-auto max-h-[90vh]"
+          >
+            <div className="flex items-start justify-between mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2 font-nunito uppercase tracking-[0.1em]">Ready for Handoff?</h3>
+                <p className="text-gray-500 font-nunito">Review what your homeowner will experience next.</p>
+              </div>
+              <button onClick={() => setShowHandoffPopup(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                  <h4 className="font-bold text-[#004EA8] mb-3 uppercase tracking-wider text-xs flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" /> Homeowner Experience
+                  </h4>
+                  <ul className="space-y-3 text-sm text-blue-900 font-nunito">
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-500" />
+                      <span>Instant SMS/Email with secure link</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-500" />
+                      <span>Digital authorization for title search</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-500" />
+                      <span>Secure upload for prior title policy</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                  <h4 className="font-bold text-emerald-700 mb-3 uppercase tracking-wider text-xs flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Why it matters
+                  </h4>
+                  <p className="text-sm text-emerald-800 leading-relaxed font-nunito">
+                    Proactive onboarding identifies title issues 2-3 weeks earlier than traditional methods, ensuring your closing stays on track.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200">
+                      <Image src={headshotUrl} alt="Chris Sauerzopf" width={48} height={48} className="object-cover" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">Chris Sauerzopf</p>
+                      <p className="text-[10px] text-gray-500 uppercase font-bold">WCT Sales Rep</p>
+                      <p className="text-[#004EA8] text-[10px] font-bold mt-0.5">Have a question, reach out.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-xs text-gray-600 font-medium">
+                    <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> chris@worldclasstitle.com</p>
+                    <p className="flex items-center gap-2"><Smartphone className="h-3 w-3" /> 614.444.4444</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Question for Chris?</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Ask anything before we send..."
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#004EA8] outline-none transition-all text-sm resize-none"
+                    value={agentQuestion}
+                    onChange={(e) => setAgentQuestion(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={confirmHandoff}
+              className="w-full bg-[#004EA8] text-white font-bold py-5 rounded-2xl hover:bg-[#003d82] transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 text-lg uppercase tracking-wider"
+            >
+              Confirm & Send to Homeowner
               <ArrowRight className="h-6 w-6" />
             </button>
           </motion.div>
