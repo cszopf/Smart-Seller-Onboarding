@@ -143,6 +143,10 @@ export default function OnboardingPage() {
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
+  useEffect(() => {
     if (invoiceId && sessionId) {
       // Silent background confirmation to pre-populate data
       confirmInvoice();
@@ -153,6 +157,9 @@ export default function OnboardingPage() {
         email: '',
         verificationStatus: 'unverified'
       });
+      // Pre-populate for prototype
+      setPropertyAddress('1234 Hight Street, Columbus OH');
+      setHomeowners([{ name: 'Jane Smith', email: 'jane@example.com', phone: '(555) 123-4567' }]);
     }
     // Land directly on Step 2 (Verify Identity)
     setStep(2);
@@ -168,7 +175,8 @@ export default function OnboardingPage() {
         setInvoice(data.invoice);
         setAgent(data.agent);
         // Pre-populate client info if available from invoice/agent context
-        setPropertyAddress('123 Listing Lane, Beverly Hills, CA');
+        setPropertyAddress('1234 Hight Street, Columbus OH');
+        setHomeowners([{ name: 'Jane Smith', email: 'jane@example.com', phone: '(555) 123-4567' }]);
       }
     } catch (err) {
       console.error('Silent confirmation failed:', err);
@@ -232,7 +240,7 @@ export default function OnboardingPage() {
         setStep(4);
         // Interstitial then redirect
         setTimeout(() => {
-          window.location.href = `https://rea-seller.vercel.app/?clientId=${data.sellerClientId}&token=${data.handoffToken}`;
+          window.location.href = `https://seller-auth.worldclasstitle.com/`;
         }, 3000);
       }
     } catch (err) {
@@ -336,14 +344,14 @@ export default function OnboardingPage() {
                         </motion.div>
                         
                         {/* Confetti particles */}
-                        {[...Array(12)].map((_, i) => (
+                        {[...Array(18)].map((_, i) => (
                           <motion.div
                             key={i}
                             initial={{ scale: 0, x: 0, y: 0 }}
                             animate={{ 
                               scale: [0, 1, 0],
-                              x: (Math.random() - 0.5) * 150,
-                              y: (Math.random() - 0.5) * 150,
+                              x: (Math.random() - 0.5) * 225,
+                              y: (Math.random() - 0.5) * 225,
                               rotate: Math.random() * 360
                             }}
                             transition={{ 
@@ -582,7 +590,7 @@ export default function OnboardingPage() {
                     {teamMembers.length > 0 ? (
                       <div className="space-y-4">
                         {teamMembers.map((member, index) => (
-                          <div key={index} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl border border-gray-100 bg-white items-end">
+                          <div key={index} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl border border-gray-100 bg-white items-start">
                             <div className="flex-1 space-y-2 w-full">
                               <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.15em] font-montserrat">Role</label>
                               <select
@@ -926,7 +934,7 @@ export default function OnboardingPage() {
               onClick={confirmHandoff}
               className="w-full bg-[#004EA8] text-white font-bold py-5 rounded-2xl hover:bg-[#003d82] transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 text-lg uppercase tracking-wider"
             >
-              Confirm & Send to Homeowner
+              Confirm & Send to {homeowners[0]?.name ? homeowners[0].name.split(' ')[0] : 'Homeowner'}
               <ArrowRight className="h-6 w-6" />
             </button>
           </motion.div>

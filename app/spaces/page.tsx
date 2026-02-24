@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { LayoutDashboard, Users, FileText, Settings, Bell, Search } from 'lucide-react';
 
 export default function SpacesDashboard() {
-  const logoUrl = "https://images.squarespace-cdn.com/content/v1/5f4d40b11b4f1e6a11b920b5/1598967776211-2JVFU1R4U8PQM71BWUVE/WorldClassTitle_Logos-RGB-Primary.png?format=1500w";
+  const logoUrl = "https://lh7-rt.googleusercontent.com/docsz/AD_4nXeSb6s_P3nXRrs9OUquQgATijkDX14cEdeK7kfFUFKVOvUMVife1HmNbLBMS4EQ8b5nKM-enx639-uc6mZ1b9kQbj41a6g4HwvAQPWZVHqq7Ity6k9n7AMSqCQVe-TAnBOOSaJcAhUrAuLw6bnSVj9pQYPDIw?key=kl0MF71HcvaAWt9zvK_MLQ";
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] flex">
@@ -41,9 +41,9 @@ export default function SpacesDashboard() {
 
         <div className="p-6 border-t border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center font-bold font-nunito">JA</div>
+            <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center font-bold font-nunito text-white">AS</div>
             <div>
-              <p className="font-bold text-sm font-nunito">John Agent</p>
+              <p className="font-bold text-sm font-nunito">Alex Sterling</p>
               <p className="text-xs text-blue-200 font-nunito">Verified Professional</p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function SpacesDashboard() {
         <div className="p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 font-nunito uppercase tracking-[0.15em]">Smart Spaces</h1>
-            <p className="text-gray-500 font-nunito">Welcome back, John. Here is what is happening with your files.</p>
+            <p className="text-gray-500 font-nunito">Welcome back, Alex. Here is what is happening with your files.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -104,7 +104,7 @@ export default function SpacesDashboard() {
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 font-nunito">Seller Authorization Signed</p>
-                      <p className="text-sm text-gray-500 font-nunito">123 Maple Avenue • Jane Smith</p>
+                      <p className="text-sm text-gray-500 font-nunito">1234 Hight Street, Columbus OH • Jane Smith</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-montserrat">2 hours ago</span>

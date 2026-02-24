@@ -46,7 +46,7 @@ export default function CheckoutPage() {
                 <label className="text-sm font-semibold text-gray-700">Email Address</label>
                 <input 
                   type="email" 
-                  defaultValue="ashley.spencer@cbrealty.com"
+                  defaultValue="alex.sterling@premier.com"
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
@@ -79,7 +79,7 @@ export default function CheckoutPage() {
                 <label className="text-sm font-semibold text-gray-700">Name on Card</label>
                 <input 
                   type="text" 
-                  defaultValue="Ashley Spencer"
+                  defaultValue="Alex Sterling"
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>

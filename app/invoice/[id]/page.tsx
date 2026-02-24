@@ -55,16 +55,16 @@ export default function InvoicePage() {
         {/* Content Section */}
         <div className="p-12 space-y-8">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Dear Ashley Spencer,</h2>
+            <h2 className="text-2xl font-bold">Dear Alex Sterling,</h2>
             <p className="text-gray-300 text-lg leading-relaxed">
               We are writing to coordinate the payment for your upcoming <span className="font-bold text-white uppercase tracking-wider">Gold Package</span> marketing campaign.
             </p>
             <div className="space-y-1">
               <p className="text-gray-300 text-lg">
-                For Property: <span className="font-bold text-white uppercase tracking-wider">123 Listing Lane, Beverly Hills, CA</span>
+                For Property: <span className="font-bold text-white uppercase tracking-wider">1234 Hight Street, Columbus OH</span>
               </p>
               <p className="text-gray-300 text-lg">
-                Seller: <span className="font-bold text-white uppercase tracking-wider">Peter Cameron</span>
+                Seller: <span className="font-bold text-white uppercase tracking-wider">Jane Smith</span>
               </p>
             </div>
           </div>

@@ -57,8 +57,8 @@ db.invoices.set(seedInvoiceId, {
   status: 'paid',
   amount: 450.00,
   currency: 'usd',
-  agentEmail: 'agent@example.com',
-  agentName: 'John Agent',
+  agentEmail: 'alex@premier.com',
+  agentName: 'Alex Sterling',
   createdAt: new Date().toISOString(),
   paidAt: new Date().toISOString(),
 });
@@ -66,7 +66,8 @@ db.invoices.set(seedInvoiceId, {
 const seedAgentId = 'agent_123';
 db.agents.set(seedAgentId, {
   agentUserId: seedAgentId,
-  email: 'agent@example.com',
+  email: 'alex@premier.com',
+  name: 'Alex Sterling',
   verificationStatus: 'unverified',
   createdAt: new Date().toISOString(),
 });
