@@ -280,8 +280,12 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC]">
+      <div className="bg-[#004EA8] text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] sticky top-0 z-50 shadow-sm">
+        Prototype: Real Estate Agent Experience
+      </div>
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
           <div className="flex flex-col items-start">
@@ -940,6 +944,7 @@ export default function OnboardingPage() {
           </motion.div>
         </div>
       )}
+      </div>
     </div>
   );
 }

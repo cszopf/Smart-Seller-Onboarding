@@ -19,7 +19,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+      <div className="bg-[#004EA8] text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] sticky top-0 z-50 shadow-sm">
+        Prototype: Real Estate Agent Experience
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">
         <div className="flex flex-col items-center mb-12">
           <div className="relative w-64 h-24 mb-4">
@@ -83,6 +87,7 @@ export default function Home() {
             <p className="text-sm text-gray-600 font-medium font-nunito">Homeowner details & secure handoff</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -21,7 +21,11 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col">
+      <div className="bg-blue-600 text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] sticky top-0 z-50 shadow-sm">
+        Prototype: Real Estate Agent Experience
+      </div>
+      <div className="flex-1 bg-gray-50 flex flex-col md:flex-row">
       {/* Left Side: Payment Form */}
       <div className="flex-1 p-8 md:p-16 lg:p-24 bg-white">
         <div className="max-w-md mx-auto">
@@ -152,6 +156,7 @@ export default function CheckoutPage() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

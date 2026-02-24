@@ -15,7 +15,11 @@ export default function InvoicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1A1A1A] text-white font-nunito flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-[#1A1A1A] flex flex-col">
+      <div className="bg-[#004EA8] text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] sticky top-0 z-50 shadow-sm">
+        Prototype: Real Estate Agent Experience
+      </div>
+      <div className="flex-1 flex flex-col items-center py-12 px-4">
       {/* Email Header Simulation */}
       <div className="max-w-3xl w-full mb-8 flex items-center justify-between text-gray-400 text-sm border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
@@ -130,6 +134,7 @@ export default function InvoicePage() {
       {/* Footer Info */}
       <div className="mt-12 max-w-2xl w-full text-center space-y-4 text-gray-500 text-sm">
         <p>© 2026 World Class Title. All rights reserved.</p>
+      </div>
       </div>
     </div>
   );
